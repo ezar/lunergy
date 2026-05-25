@@ -233,21 +233,21 @@ body{
   </div>
 
   <div class="phase-hud">
-    <span class="phase-name" id="phase-label">FASE 1: CONTACTO</span>
-    <span>TIEMPO: <span id="time-val">00:00</span></span>
-    <span class="cond-label" id="cond-label">☀ DÍA LUNAR</span>
+    <span class="phase-name" id="phase-label">PHASE 1: CONTACT</span>
+    <span>TIME: <span id="time-val">00:00</span></span>
+    <span class="cond-label" id="cond-label">☀ LUNAR DAY</span>
   </div>
 
   <div class="energy-section">
     <div class="energy-label-row">
-      <span class="energy-label">▌ ENERGÍA BASE</span>
+      <span class="energy-label">▌ BASE ENERGY</span>
       <span class="energy-pct" id="energy-pct" style="color:#33ff88">60%</span>
     </div>
     <div class="bar-track">
       <div class="bar-fill" id="energy-bar" style="width:60%;background-color:#33ff88"></div>
     </div>
     <div class="kw-row">
-      <span>CONSUMO: <span id="cons-val">15</span> kWh/s</span>
+      <span>DRAIN: <span id="cons-val">15</span> kWh/s</span>
       <span>NET: <span id="net-val" style="color:#33ff88">+0.0</span>/s</span>
       <span>GEN: <span id="gen-val">0</span> kWh/s</span>
     </div>
@@ -267,11 +267,11 @@ body{
 
   <div class="ticker-wrap">
     <span class="ticker-inner">
-      ★ La cara oscura de la Luna alcanza -130°C — casi más fría que el Antártico &nbsp;&nbsp;&nbsp;
-      ★ El suelo lunar tiene 42% de oxígeno — extraíble con electricidad &nbsp;&nbsp;&nbsp;
-      ★ El Saturn V era 85% combustible para escapar la gravedad terrestre &nbsp;&nbsp;&nbsp;
-      ★ La Luna siempre muestra la misma cara a la Tierra (resonancia de marea) &nbsp;&nbsp;&nbsp;
-      ★ Los paneles solares en la Luna deben soportar cambios de +250°C a -130°C &nbsp;&nbsp;&nbsp;
+      ★ The Moon's dark side reaches -130°C — colder than Antarctica &nbsp;&nbsp;&nbsp;
+      ★ Lunar soil contains 42% oxygen — extractable using electricity &nbsp;&nbsp;&nbsp;
+      ★ The Saturn V was 85% fuel just to escape Earth's gravity &nbsp;&nbsp;&nbsp;
+      ★ The Moon always shows the same face to Earth (tidal locking) &nbsp;&nbsp;&nbsp;
+      ★ Solar panels on the Moon must survive swings from +250°C to -130°C &nbsp;&nbsp;&nbsp;
     </span>
   </div>
 </div>
@@ -280,7 +280,7 @@ body{
 <div id="gameover-screen" class="screen">
   <div class="go-title">MISSION FAILED</div>
   <div style="font-family:monospace;font-size:14px;color:#aaccff;margin-bottom:16px;text-align:center">
-    La base se quedó sin energía.<br>Evacuación iniciada.
+    The base ran out of power.<br>Crew evacuation initiated.
   </div>
   <div class="go-stats">
     <div><div class="stat-label">SURVIVED</div><div class="stat-val" id="go-time">0s</div></div>
@@ -298,40 +298,40 @@ body{
 <script>
 // ═══════════════ CONFIG ═══════════════
 const SOURCES_CFG = [
-  { id:'solar',   icon:'☀', name:'SOLAR',   kwh:18, fact:'La noche lunar dura 14 días terrestres. Los paneles solares necesitan baterías enormes para sobrevivir sin luz.' },
-  { id:'nuclear', icon:'⚛', name:'NUCLEAR', kwh:35, fact:'La fusión nuclear recrea la energía del Sol. En la Luna sería la fuente más potente y limpia disponible.' },
-  { id:'helium',  icon:'◆', name:'HELIO-3', kwh:28, fact:'El Helio-3 está en el suelo lunar. Produce energía mucho más limpia que el nuclear convencional en la Tierra.' },
-  { id:'methane', icon:'♨', name:'METANO',  kwh:20, fact:'El metano en la Luna usa un sistema bicomponente: combustible + oxidante, porque no hay oxígeno en la Luna.' },
+  { id:'solar',   icon:'☀', name:'SOLAR',   kwh:18, fact:'A lunar day lasts 14 Earth days with no atmosphere — each m² of panel captures up to 1366 W of sunlight, nearly double Earth\'s output.' },
+  { id:'nuclear', icon:'⚛', name:'NUCLEAR', kwh:35, fact:'Nuclear fusion recreates the energy of the Sun. 1 gram of fuel can equal 8 tons of oil — making it ideal for long lunar missions.' },
+  { id:'helium',  icon:'◆', name:'HELIO-3', kwh:28, fact:'Helium-3 is rare on Earth but abundant in lunar regolith. Just 1 ton could power a city for a year with virtually no radioactive waste.' },
+  { id:'methane', icon:'♨', name:'METHANE', kwh:20, fact:'Methane can be synthesised on the Moon by combining hydrogen from ice with carbon from regolith — doubling as rocket propellant and emergency power.' },
 ];
 
 const PHASES_CFG = [
-  { from:0,  consumption:15, name:'FASE 1: CONTACTO' },
-  { from:31, consumption:22, name:'FASE 2: ESTABLECIMIENTO' },
-  { from:61, consumption:30, name:'FASE 3: EXPANSION' },
-  { from:91, consumption:40, name:'FASE 4: SUPERVIVENCIA' },
+  { from:0,  consumption:15, name:'PHASE 1: CONTACT' },
+  { from:31, consumption:22, name:'PHASE 2: ESTABLISHMENT' },
+  { from:61, consumption:30, name:'PHASE 3: EXPANSION' },
+  { from:91, consumption:40, name:'PHASE 4: SURVIVAL' },
 ];
 
 const GO_MSGS = [
-  '¡La base no ha sobrevivido! Estudia mejor las fuentes de energía.',
-  '¡Buen intento! Necesitas combinar mejor las fuentes.',
-  '¡Casi! La expansión lunar requiere energía constante.',
-  '¡MISIÓN COMPLETADA! Eres un experto en energía lunar.',
+  'The base did not survive. Learn more about the energy sources and try again!',
+  'Good attempt! Try combining sources more effectively.',
+  'So close! Lunar expansion demands constant power.',
+  'MISSION COMPLETE! You are a lunar energy expert.',
 ];
 
 const EVENTS_CFG = [
-  { id:'night',   p:0.30, label:'NOCHE LUNAR',
+  { id:'night',   p:0.30, label:'LUNAR NIGHT',
     on:  c=>{ c.solar=0; },
     off: c=>{ c.solar=1; } },
-  { id:'storm',   p:0.20, label:'TORMENTA DE POLVO',
+  { id:'storm',   p:0.20, label:'DUST STORM',
     on:  c=>{ c.solar=0.3; c.xcons+=5; },
     off: c=>{ c.solar=1;   c.xcons-=5; } },
-  { id:'cold',    p:0.20, label:'FRÍO EXTREMO -130°C',
+  { id:'cold',    p:0.20, label:'EXTREME COLD -130°C',
     on:  c=>{ c.helium=0.6; },
     off: c=>{ c.helium=1; } },
-  { id:'heat',    p:0.15, label:'CALOR SOLAR +120°C',
+  { id:'heat',    p:0.15, label:'SOLAR HEAT +120°C',
     on:  c=>{ c.methane=0.7; },
     off: c=>{ c.methane=1; } },
-  { id:'reactor', p:0.15, label:'FALLO DE REACTOR',
+  { id:'reactor', p:0.15, label:'REACTOR FAILURE',
     on:  c=>{ c.nuclear=0; },
     off: c=>{ c.nuclear=1; } },
 ];
@@ -437,9 +437,9 @@ const Renderer = {
     netEl.style.color = net >= 0 ? '#33ff88' : '#ff4d4d';
 
     const c = GS.cond;
-    const condText = c.solar===0 ? '🌑 NOCHE LUNAR' : c.solar<1 ? '※ TORMENTA DE POLVO' :
-      c.nuclear===0 ? '⚛ FALLO REACTOR' : c.helium<1 ? '❄ FRÍO EXTREMO' :
-      c.methane<1 ? '♨ CALOR SOLAR' : '☀ DÍA LUNAR';
+    const condText = c.solar===0 ? '🌑 LUNAR NIGHT' : c.solar<1 ? '※ DUST STORM' :
+      c.nuclear===0 ? '⚛ REACTOR FAILURE' : c.helium<1 ? '❄ EXTREME COLD' :
+      c.methane<1 ? '♨ SOLAR HEAT' : '☀ LUNAR DAY';
     document.getElementById('cond-label').textContent = condText;
 
     this.updateSources();
