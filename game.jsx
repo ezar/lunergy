@@ -247,9 +247,6 @@ function TitleScreen({ onStart, onIntro, highScore }){
         INSERT COIN — PRESS START
       </div>
 
-      <div style={{position:'absolute', bottom:8, fontSize:8, color:'#6a6a82', letterSpacing:1}}>
-        BY VLADIMIR · DENIZ · LEYRE · PETR    MENTOR: MR. ALBERT
-      </div>
     </div>
   );
 }
