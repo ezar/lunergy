@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LUNERGY — Moon Base Survival</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  background:#05051a;color:#f5f5ff;
+  font-family:'Press Start 2P',monospace;
+  min-height:100vh;overflow-x:hidden;
+}
+#bg-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;image-rendering:pixelated;}
+.screen{position:relative;z-index:1;min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
+.screen.active{display:flex;}
+
+/* TITLE */
+#title-screen{text-align:center;}
+.logo{
+  font-size:clamp(28px,7vw,68px);color:#FFD700;letter-spacing:8px;
+  text-shadow:4px 4px 0 #3a3aff,8px 8px 0 #1a0d3d;
+  animation:pulse-glow 1.5s ease-in-out infinite;margin-bottom:14px;
+}
+.tagline{font-size:clamp(7px,1.3vw,11px);color:#66e0ff;letter-spacing:3px;margin-bottom:36px;}
+.credits{font-size:8px;color:#4a4a82;letter-spacing:1px;margin-top:24px;}
+
+/* BUTTONS */
+.btn{
+  font-family:'Press Start 2P',monospace;font-size:12px;
+  padding:14px 22px;background:#1a1a5a;color:#f5f5ff;
+  border:3px solid #3a3aff;cursor:pointer;letter-spacing:1px;
+  text-transform:uppercase;transition:all 0.1s;
+  box-shadow:0 4px 0 #0a0a30;
+}
+.btn:hover{background:#2a2a7a;border-color:#FFD700;color:#FFD700;}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #0a0a30;}
+.btn.gold{background:#FFD700;color:#1a1a00;border-color:#aa8800;box-shadow:0 4px 0 #7a6000;}
+.btn.gold:hover{background:#ffe066;}
+.btn-row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
+
+/* HELP */
+#help-screen{background:rgba(5,5,26,0.97);}
+.briefing-box{
+  max-width:620px;width:100%;border:3px solid #3a3aff;
+  padding:28px 32px;background:rgba(10,10,42,0.95);margin-bottom:24px;
+}
+.briefing-title{font-size:13px;color:#FFD700;text-align:center;margin-bottom:18px;letter-spacing:2px;}
+.briefing-body{font-family:monospace;font-size:14px;line-height:1.9;color:#f5f5ff;}
+.briefing-body p{margin-bottom:10px;}
+
+/* GAME SCREEN */
+#game-screen{display:none;flex-direction:column;min-height:100vh;padding:0;justify-content:flex-start;}
+#game-screen.active{display:flex;}
+
+.title-bar{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 20px;background:rgba(5,5,26,0.97);border-bottom:3px solid #3a3aff;
+}
+.game-logo{font-size:clamp(14px,2vw,18px);color:#FFD700;letter-spacing:4px;}
+.score-display{font-size:clamp(10px,1.5vw,14px);color:#FFD700;}
+
+.sky-section{
+  height:90px;position:relative;overflow:hidden;
+  background:linear-gradient(to bottom,#05051a,#0a0a30);
+  border-bottom:3px solid #3a3aff;
+}
+.lunar-surface{
+  position:absolute;bottom:0;left:0;right:0;height:32px;
+  background:linear-gradient(to bottom,#5a5a82,#3a3a62);
+}
+.lunar-surface::before,.lunar-surface::after{
+  content:'';position:absolute;border-radius:50%;border:3px solid #9a9ac0;
+}
+.lunar-surface::before{width:42px;height:18px;left:18%;top:-7px;}
+.lunar-surface::after{width:28px;height:12px;left:57%;top:-5px;}
+
+.phase-hud{
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;
+  padding:8px 20px;background:rgba(5,5,26,0.9);border-bottom:2px solid #3a3aff;
+  font-size:9px;color:#aaccff;
+}
+.phase-name{color:#FFD700;}
+.cond-label{color:#66e0ff;}
+
+.energy-section{padding:10px 20px;background:rgba(5,5,26,0.9);border-bottom:2px solid #3a3aff;}
+.energy-label-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;font-size:9px;}
+.energy-label{color:#FFD700;letter-spacing:2px;}
+.energy-pct{font-size:14px;}
+.bar-track{background:#000;border:3px solid #f5f5ff;padding:3px;height:28px;}
+.bar-fill{
+  height:100%;transition:width 0.6s linear,background-color 0.4s;
+  position:relative;overflow:hidden;
+}
+.bar-fill::after{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(to right,transparent 0px,transparent 18px,rgba(0,0,0,0.5) 18px,rgba(0,0,0,0.5) 20px);
+}
+.kw-row{display:flex;justify-content:space-between;font-size:8px;color:#aaccff;margin-top:5px;flex-wrap:wrap;gap:4px;}
+
+#event-banner{
+  padding:8px 20px;background:rgba(20,0,0,0.9);
+  border-top:2px solid #ff4d4d;border-bottom:2px solid #ff4d4d;
+  font-size:10px;color:#ff4d4d;text-align:center;letter-spacing:2px;
+  display:none;animation:blink-slow 0.8s steps(1) infinite;
+}
+#event-banner.active{display:block;}
+
+.sources-section{padding:12px 20px;background:rgba(5,5,26,0.88);border-bottom:2px solid #3a3aff;}
+.sources-label{font-size:9px;color:#FFD700;letter-spacing:2px;margin-bottom:10px;}
+.sources-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+@media(max-width:700px){.sources-grid{grid-template-columns:repeat(2,1fr);}}
+
+.src-btn{
+  font-family:'Press Start 2P',monospace;cursor:pointer;
+  background:#0a0a2a;border:3px solid #3a3aff;padding:10px 8px;
+  color:#aaccff;text-align:center;transition:all 0.1s;user-select:none;
+}
+.src-btn:hover{border-color:#FFD700;}
+.src-btn.on{border-color:#FFD700;background:#1a1500;box-shadow:0 0 12px rgba(255,215,0,0.3);}
+.src-btn.dead{opacity:0.45;border-color:#3a3a6a;}
+@keyframes flash-red{
+  0%,100%{border-color:#3a3aff;}
+  50%{border-color:#ff4d4d;box-shadow:0 0 10px #ff4d4d;}
+}
+.src-btn.cant-afford{animation:flash-red 0.4s;}
+.src-icon{font-size:20px;display:block;margin-bottom:6px;}
+.src-name{font-size:8px;color:#FFD700;display:block;margin-bottom:4px;}
+.src-kwh{font-size:8px;color:#66e0ff;display:block;margin-bottom:6px;}
+.src-status{font-size:7px;letter-spacing:1px;display:block;}
+.st-on{color:#33ff88;animation:blink-slow 1s steps(1) infinite;}
+.st-off{color:#6a6a82;}
+.st-dead{color:#ff4d4d;}
+
+#fact-card{
+  padding:10px 20px;background:rgba(0,0,20,0.97);
+  border-top:2px solid #FFD700;border-bottom:2px solid #FFD700;
+  display:none;
+}
+#fact-card.active{display:block;}
+.fact-label{font-size:8px;color:#FFD700;letter-spacing:2px;margin-bottom:6px;}
+#fact-text{font-family:monospace;font-size:14px;color:#f5f5ff;line-height:1.6;}
+
+.ticker-wrap{
+  background:rgba(5,5,26,0.97);border-top:2px solid #3a3aff;
+  padding:7px 0;overflow:hidden;font-size:8px;color:#66e0ff;
+  white-space:nowrap;margin-top:auto;
+}
+.ticker-inner{display:inline-block;animation:ticker-anim 40s linear infinite;}
+@keyframes ticker-anim{0%{transform:translateX(100vw);}100%{transform:translateX(-100%);}}
+
+/* GAME OVER */
+#gameover-screen{text-align:center;padding:30px;}
+.go-title{
+  font-size:clamp(16px,4.5vw,38px);color:#ff4d4d;letter-spacing:4px;
+  text-shadow:4px 4px 0 #4d0000;margin-bottom:20px;
+}
+.go-stats{
+  background:#000;border:3px solid #3a3aff;padding:20px 28px;
+  margin:16px auto 20px;max-width:400px;
+  display:grid;grid-template-columns:1fr 1fr;gap:14px;text-align:center;
+}
+.stat-label{font-size:8px;color:#66e0ff;letter-spacing:2px;}
+.stat-val{font-size:28px;color:#FFD700;margin-top:4px;}
+.go-msg{font-family:monospace;font-size:14px;color:#aaccff;line-height:1.7;max-width:500px;margin:0 auto 22px;}
+.new-high{font-size:13px;color:#FFD700;letter-spacing:3px;margin-bottom:14px;animation:blink-slow 0.7s steps(1) infinite;}
+.old-high{font-size:9px;color:#66e0ff;letter-spacing:2px;margin-bottom:14px;}
+
+/* ANIMATIONS */
+@keyframes pulse-glow{
+  0%,100%{filter:brightness(1) drop-shadow(0 0 8px #FFD700);}
+  50%{filter:brightness(1.3) drop-shadow(0 0 16px #ffe066);}
+}
+@keyframes blink{0%,49%{opacity:1;}50%,100%{opacity:0;}}
+@keyframes blink-slow{0%,49%{opacity:1;}50%,100%{opacity:0.3;}}
+
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-track{background:#05051a;}
+::-webkit-scrollbar-thumb{background:#3a3aff;}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<!-- ═══ TITLE ═══ -->
+<div id="title-screen" class="screen active">
+  <div class="logo">LUNERGY</div>
+  <div class="tagline">⚡ MOON BASE SURVIVAL ⚡</div>
+  <div class="btn-row" style="margin-bottom:28px;">
+    <button class="btn gold" onclick="startGame()">► START MISSION</button>
+    <button class="btn" onclick="showHelp()">HOW TO PLAY</button>
+  </div>
+  <div id="title-hs" style="font-size:10px;color:#FFD700;margin-bottom:16px;display:none">
+    ★ HIGH SCORE: <span id="title-hs-val">0</span> ★
+  </div>
+  <div style="font-size:9px;color:#aaccff;letter-spacing:2px;animation:blink 1s steps(1,end) infinite">
+    INSERT COIN — PRESS START
+  </div>
+  <div class="credits">BY VLADIMIR · DENIZ · LEYRE · PETR &nbsp;&nbsp; MENTOR: MR. ALBERT</div>
+</div>
+
+<!-- ═══ HELP ═══ -->
+<div id="help-screen" class="screen">
+  <div class="briefing-box">
+    <div class="briefing-title">▼ MISSION BRIEFING ▼</div>
+    <div class="briefing-body">
+      <p>► YEAR 2087. <span style="color:#FFD700">Outpost LUNERGY-1</span> on the Moon needs power.</p>
+      <p>► Energy drains every second. <span style="color:#ff4d4d">Reach 0% = MISSION FAILED.</span></p>
+      <p>► Activate sources to generate power. Each costs <span style="color:#FFD700">5 points</span> to turn on.</p>
+      <p>► ☀ <b style="color:#ffcc33">SOLAR</b> — strong by day, dead at night / storms</p>
+      <p>► ⚛ <b style="color:#66e0ff">NUCLEAR</b> — steady, can fail temporarily</p>
+      <p>► ◆ <b style="color:#ff99cc">HELIO-3</b> — powerful, weakens in cold</p>
+      <p>► ♨ <b style="color:#33ff88">METHANE</b> — reliable, weaker in heat</p>
+      <p style="color:#FFD700">► Survive as long as possible. Score big!</p>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn" onclick="showTitle()">← BACK</button>
+    <button class="btn gold" onclick="startGame()">► LAUNCH ►</button>
+  </div>
+</div>
+
+<!-- ═══ GAME ═══ -->
+<div id="game-screen" class="screen">
+  <div class="title-bar">
+    <div class="game-logo">LUNERGY</div>
+    <div class="score-display">SCORE: <span id="score-val">000000</span> ⚡</div>
+  </div>
+
+  <div class="sky-section">
+    <div class="lunar-surface"></div>
+  </div>
+
+  <div class="phase-hud">
+    <span class="phase-name" id="phase-label">FASE 1: CONTACTO</span>
+    <span>TIEMPO: <span id="time-val">00:00</span></span>
+    <span class="cond-label" id="cond-label">☀ DÍA LUNAR</span>
+  </div>
+
+  <div class="energy-section">
+    <div class="energy-label-row">
+      <span class="energy-label">▌ ENERGÍA BASE</span>
+      <span class="energy-pct" id="energy-pct" style="color:#33ff88">60%</span>
+    </div>
+    <div class="bar-track">
+      <div class="bar-fill" id="energy-bar" style="width:60%;background-color:#33ff88"></div>
+    </div>
+    <div class="kw-row">
+      <span>CONSUMO: <span id="cons-val">15</span> kWh/s</span>
+      <span>NET: <span id="net-val" style="color:#33ff88">+0.0</span>/s</span>
+      <span>GEN: <span id="gen-val">0</span> kWh/s</span>
+    </div>
+  </div>
+
+  <div id="event-banner">⚠ <span id="ev-text">—</span> — <span id="ev-timer">—</span>s ⚠</div>
+
+  <div class="sources-section">
+    <div class="sources-label">▌ POWER SOURCES — CLICK TO TOGGLE</div>
+    <div class="sources-grid" id="sources-grid"></div>
+  </div>
+
+  <div id="fact-card">
+    <div class="fact-label">✦ DID YOU KNOW ✦</div>
+    <div id="fact-text"></div>
+  </div>
+
+  <div class="ticker-wrap">
+    <span class="ticker-inner">
+      ★ La cara oscura de la Luna alcanza -130°C — casi más fría que el Antártico &nbsp;&nbsp;&nbsp;
+      ★ El suelo lunar tiene 42% de oxígeno — extraíble con electricidad &nbsp;&nbsp;&nbsp;
+      ★ El Saturn V era 85% combustible para escapar la gravedad terrestre &nbsp;&nbsp;&nbsp;
+      ★ La Luna siempre muestra la misma cara a la Tierra (resonancia de marea) &nbsp;&nbsp;&nbsp;
+      ★ Los paneles solares en la Luna deben soportar cambios de +250°C a -130°C &nbsp;&nbsp;&nbsp;
+    </span>
+  </div>
+</div>
+
+<!-- ═══ GAME OVER ═══ -->
+<div id="gameover-screen" class="screen">
+  <div class="go-title">MISSION FAILED</div>
+  <div style="font-family:monospace;font-size:14px;color:#aaccff;margin-bottom:16px;text-align:center">
+    La base se quedó sin energía.<br>Evacuación iniciada.
+  </div>
+  <div class="go-stats">
+    <div><div class="stat-label">SURVIVED</div><div class="stat-val" id="go-time">0s</div></div>
+    <div><div class="stat-label">SCORE</div><div class="stat-val" id="go-score">0</div></div>
+  </div>
+  <div id="new-high-msg" class="new-high" style="display:none">★ NEW HIGH SCORE ★</div>
+  <div id="old-high-msg" class="old-high" style="display:none">HIGH SCORE: <span id="go-hs">0</span></div>
+  <div class="go-msg" id="go-msg"></div>
+  <div class="btn-row">
+    <button class="btn gold" onclick="startGame()">↻ TRY AGAIN</button>
+    <button class="btn" onclick="showTitle()">◄ MAIN MENU</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════ CONFIG ═══════════════
+const SOURCES_CFG = [
+  { id:'solar',   icon:'☀', name:'SOLAR',   kwh:18, fact:'La noche lunar dura 14 días terrestres. Los paneles solares necesitan baterías enormes para sobrevivir sin luz.' },
+  { id:'nuclear', icon:'⚛', name:'NUCLEAR', kwh:35, fact:'La fusión nuclear recrea la energía del Sol. En la Luna sería la fuente más potente y limpia disponible.' },
+  { id:'helium',  icon:'◆', name:'HELIO-3', kwh:28, fact:'El Helio-3 está en el suelo lunar. Produce energía mucho más limpia que el nuclear convencional en la Tierra.' },
+  { id:'methane', icon:'♨', name:'METANO',  kwh:20, fact:'El metano en la Luna usa un sistema bicomponente: combustible + oxidante, porque no hay oxígeno en la Luna.' },
+];
+
+const PHASES_CFG = [
+  { from:0,  consumption:15, name:'FASE 1: CONTACTO' },
+  { from:31, consumption:22, name:'FASE 2: ESTABLECIMIENTO' },
+  { from:61, consumption:30, name:'FASE 3: EXPANSION' },
+  { from:91, consumption:40, name:'FASE 4: SUPERVIVENCIA' },
+];
+
+const GO_MSGS = [
+  '¡La base no ha sobrevivido! Estudia mejor las fuentes de energía.',
+  '¡Buen intento! Necesitas combinar mejor las fuentes.',
+  '¡Casi! La expansión lunar requiere energía constante.',
+  '¡MISIÓN COMPLETADA! Eres un experto en energía lunar.',
+];
+
+const EVENTS_CFG = [
+  { id:'night',   p:0.30, label:'NOCHE LUNAR',
+    on:  c=>{ c.solar=0; },
+    off: c=>{ c.solar=1; } },
+  { id:'storm',   p:0.20, label:'TORMENTA DE POLVO',
+    on:  c=>{ c.solar=0.3; c.xcons+=5; },
+    off: c=>{ c.solar=1;   c.xcons-=5; } },
+  { id:'cold',    p:0.20, label:'FRÍO EXTREMO -130°C',
+    on:  c=>{ c.helium=0.6; },
+    off: c=>{ c.helium=1; } },
+  { id:'heat',    p:0.15, label:'CALOR SOLAR +120°C',
+    on:  c=>{ c.methane=0.7; },
+    off: c=>{ c.methane=1; } },
+  { id:'reactor', p:0.15, label:'FALLO DE REACTOR',
+    on:  c=>{ c.nuclear=0; },
+    off: c=>{ c.nuclear=1; } },
+];
+
+// ═══════════════ STATE ═══════════════
+const GS = {
+  screen:'title',
+  energy:60, score:0, time:0, phaseIdx:0,
+  sources:{ solar:false, nuclear:false, helium:false, methane:false },
+  cond:{ solar:1, nuclear:1, helium:1, methane:1, xcons:0 },
+  event:null, evTimer:0, nextEv:0,
+  loopId:null, factTimer:null,
+};
+
+function condFactor(id){ return GS.cond[id] ?? 1; }
+function getGeneration(){
+  return SOURCES_CFG.reduce((t,s)=> GS.sources[s.id] ? t + s.kwh * condFactor(s.id) : t, 0);
+}
+function currentPhase(){ return PHASES_CFG[GS.phaseIdx]; }
+function consumption(){ return currentPhase().consumption + GS.cond.xcons; }
+
+// ═══════════════ SCORE MANAGER ═══════════════
+const SM = {
+  save(v){ try{ localStorage.setItem('lunergy-hs', v); }catch(e){} },
+  load(){ try{ return parseInt(localStorage.getItem('lunergy-hs')||'0'); }catch(e){ return 0; } }
+};
+
+// ═══════════════ EVENT ENGINE ═══════════════
+const EE = {
+  schedule(){ GS.nextEv = 15 + Math.random()*15; },
+  tick(){
+    GS.nextEv--;
+    if(GS.nextEv <= 0 && !GS.event) this.trigger();
+    if(GS.event){
+      GS.evTimer--;
+      document.getElementById('ev-timer').textContent = GS.evTimer;
+      if(GS.evTimer <= 0) this.clear();
+    }
+  },
+  trigger(){
+    let r = Math.random(), acc = 0, ev = EVENTS_CFG[0];
+    for(const e of EVENTS_CFG){ acc += e.p; if(r < acc){ ev = e; break; } }
+    GS.event = ev;
+    GS.evTimer = 10 + Math.floor(Math.random()*11);
+    ev.on(GS.cond);
+    document.getElementById('ev-text').textContent = ev.label;
+    document.getElementById('ev-timer').textContent = GS.evTimer;
+    document.getElementById('event-banner').classList.add('active');
+  },
+  clear(){
+    if(!GS.event) return;
+    GS.event.off(GS.cond);
+    GS.event = null;
+    this.schedule();
+    document.getElementById('event-banner').classList.remove('active');
+  }
+};
+
+// ═══════════════ SOURCE MANAGER ═══════════════
+const SrcMgr = {
+  toggle(id){
+    const src = SOURCES_CFG.find(s=>s.id===id);
+    if(!src) return;
+    if(GS.sources[id]){
+      GS.sources[id] = false;
+    } else {
+      if(GS.score < 5){
+        const btn = document.getElementById('sb-'+id);
+        if(btn){ btn.classList.add('cant-afford'); setTimeout(()=>btn.classList.remove('cant-afford'),400); }
+        return;
+      }
+      GS.score -= 5;
+      GS.sources[id] = true;
+      showFact(src);
+    }
+    Renderer.updateSources();
+  }
+};
+
+// ═══════════════ RENDERER ═══════════════
+const Renderer = {
+  updateHUD(){
+    const e = GS.energy, gen = getGeneration(), cons = consumption();
+    const net = gen - cons;
+
+    const col = e > 50 ? '#33ff88' : e > 25 ? '#ffcc33' : '#ff4d4d';
+    document.getElementById('energy-bar').style.width = e + '%';
+    document.getElementById('energy-bar').style.backgroundColor = col;
+    const pctEl = document.getElementById('energy-pct');
+    pctEl.textContent = Math.floor(e) + '%';
+    pctEl.style.color = col;
+
+    document.getElementById('score-val').textContent = String(Math.floor(GS.score)).padStart(6,'0');
+    const mm = String(Math.floor(GS.time/60)).padStart(2,'0');
+    const ss = String(GS.time%60).padStart(2,'0');
+    document.getElementById('time-val').textContent = mm+':'+ss;
+
+    document.getElementById('phase-label').textContent = currentPhase().name;
+    document.getElementById('cons-val').textContent = cons;
+    document.getElementById('gen-val').textContent = gen.toFixed(0);
+    const netEl = document.getElementById('net-val');
+    netEl.textContent = (net>=0?'+':'')+net.toFixed(1);
+    netEl.style.color = net >= 0 ? '#33ff88' : '#ff4d4d';
+
+    const c = GS.cond;
+    const condText = c.solar===0 ? '🌑 NOCHE LUNAR' : c.solar<1 ? '※ TORMENTA DE POLVO' :
+      c.nuclear===0 ? '⚛ FALLO REACTOR' : c.helium<1 ? '❄ FRÍO EXTREMO' :
+      c.methane<1 ? '♨ CALOR SOLAR' : '☀ DÍA LUNAR';
+    document.getElementById('cond-label').textContent = condText;
+
+    this.updateSources();
+  },
+  updateSources(){
+    SOURCES_CFG.forEach(src => {
+      const btn = document.getElementById('sb-'+src.id);
+      if(!btn) return;
+      const on = GS.sources[src.id];
+      const f = condFactor(src.id);
+      const eff = (src.kwh * f).toFixed(0);
+      btn.className = 'src-btn' + (on?' on':'') + (f<0.5?' dead':'');
+      btn.querySelector('.src-kwh').textContent = eff+' kWh/s'+(f!==1?` ×${f.toFixed(1)}`:'');
+      const st = btn.querySelector('.src-status');
+      if(f===0){ st.textContent='✖ INOPERATIVE'; st.className='src-status st-dead'; }
+      else if(on){ st.textContent='► ONLINE'; st.className='src-status st-on'; }
+      else{ st.textContent='► OFFLINE'; st.className='src-status st-off'; }
+    });
+  }
+};
+
+// ═══════════════ FACT CARD ═══════════════
+function showFact(src){
+  document.getElementById('fact-text').textContent = src.fact;
+  document.getElementById('fact-card').classList.add('active');
+  if(GS.factTimer) clearTimeout(GS.factTimer);
+  GS.factTimer = setTimeout(()=>document.getElementById('fact-card').classList.remove('active'), 3000);
+}
+
+// ═══════════════ GAME LOOP ═══════════════
+const GL = {
+  start(){ GS.loopId = setInterval(()=>this.tick(), 1000); },
+  stop(){ clearInterval(GS.loopId); GS.loopId = null; },
+  tick(){
+    if(GS.screen !== 'game') return;
+    GS.time++;
+    for(let i=PHASES_CFG.length-1; i>=0; i--){
+      if(GS.time >= PHASES_CFG[i].from){ GS.phaseIdx = i; break; }
+    }
+    EE.tick();
+    const gen = getGeneration();
+    const cons = consumption();
+    GS.energy = Math.max(0, Math.min(100, GS.energy + (gen - cons) * 0.1));
+    if(GS.energy > 0) GS.score++;
+    Renderer.updateHUD();
+    if(GS.energy <= 0){ this.stop(); gameOver(); }
+  }
+};
+
+// ═══════════════ SCREENS ═══════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  GS.screen = id.replace('-screen','');
+}
+
+function showTitle(){
+  GL.stop();
+  const hs = SM.load();
+  if(hs > 0){
+    document.getElementById('title-hs-val').textContent = hs;
+    document.getElementById('title-hs').style.display = 'block';
+  }
+  showScreen('title-screen');
+}
+
+function showHelp(){ showScreen('help-screen'); }
+
+function startGame(){
+  GL.stop();
+  GS.energy=60; GS.score=0; GS.time=0; GS.phaseIdx=0;
+  GS.sources={solar:false,nuclear:false,helium:false,methane:false};
+  GS.cond={solar:1,nuclear:1,helium:1,methane:1,xcons:0};
+  GS.event=null;
+  EE.schedule();
+  document.getElementById('event-banner').classList.remove('active');
+  document.getElementById('fact-card').classList.remove('active');
+  buildSourceBtns();
+  showScreen('game-screen');
+  Renderer.updateHUD();
+  GL.start();
+}
+
+function buildSourceBtns(){
+  const grid = document.getElementById('sources-grid');
+  grid.innerHTML = '';
+  SOURCES_CFG.forEach(src => {
+    const d = document.createElement('div');
+    d.className = 'src-btn';
+    d.id = 'sb-'+src.id;
+    d.innerHTML =
+      `<span class="src-icon">${src.icon}</span>` +
+      `<span class="src-name">${src.name}</span>` +
+      `<span class="src-kwh">${src.kwh} kWh/s</span>` +
+      `<span class="src-status st-off">► OFFLINE</span>`;
+    d.addEventListener('click', ()=>SrcMgr.toggle(src.id));
+    grid.appendChild(d);
+  });
+}
+
+function gameOver(){
+  const score = Math.floor(GS.score);
+  const hs = SM.load();
+  const isNew = score > hs;
+  if(isNew) SM.save(score);
+  const mm = String(Math.floor(GS.time/60)).padStart(2,'0');
+  const ss = String(GS.time%60).padStart(2,'0');
+  document.getElementById('go-time').textContent = mm+':'+ss;
+  document.getElementById('go-score').textContent = score;
+  document.getElementById('go-msg').textContent = GO_MSGS[GS.phaseIdx];
+  document.getElementById('new-high-msg').style.display = isNew ? 'block' : 'none';
+  const ohEl = document.getElementById('old-high-msg');
+  if(!isNew && hs > 0){
+    document.getElementById('go-hs').textContent = hs;
+    ohEl.style.display = 'block';
+  } else { ohEl.style.display = 'none'; }
+  showScreen('gameover-screen');
+}
+
+// ═══════════════ BACKGROUND ═══════════════
+(function(){
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  window.addEventListener('resize', resize);
+  resize();
+  let s = 42;
+  const rnd = ()=>{ s=(s*9301+49297)%233280; return s/233280; };
+  const stars = Array.from({length:220}, ()=>({
+    x:rnd(), y:rnd()*0.8, sz:rnd()<0.8?1:2,
+    phase:rnd()*Math.PI*2, spd:0.5+rnd()*1.5,
+    col:['#fff','#ffe066','#66e0ff','#ff99cc','#fff'][Math.floor(rnd()*5)]
+  }));
+  let t = 0;
+  (function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    stars.forEach(st => {
+      const a = 0.25 + 0.75*Math.abs(Math.sin(t*0.025*st.spd + st.phase));
+      ctx.fillStyle = st.col;
+      ctx.globalAlpha = a;
+      ctx.fillRect(Math.floor(st.x*canvas.width), Math.floor(st.y*canvas.height), st.sz*2, st.sz*2);
+    });
+    ctx.globalAlpha = 1;
+    t++;
+    requestAnimationFrame(draw);
+  })();
+})();
+
+// ═══════════════ INIT ═══════════════
+showTitle();
+</script>
+</body>
+</html>
