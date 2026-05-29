@@ -5,7 +5,7 @@ import { Panel } from '../ui/Panel'
 import { useGameStore } from '../../store/useGameStore'
 import { useAudio } from '../../hooks/useAudio'
 import { formatTime, padScore } from '../../lib/utils'
-import { GAME_OVER_MESSAGES } from '../../lib/constants'
+import { GAME_OVER_MESSAGES, SOURCES, getEffectiveOutput } from '../../lib/constants'
 
 export function GameOverScreen() {
   const result = useGameStore(s => s.result)
@@ -75,6 +75,43 @@ export function GameOverScreen() {
                   ★ NEW HIGH SCORE! ★
                 </motion.p>
               )}
+            </div>
+          </Panel>
+        </motion.div>
+
+        {/* Source analysis */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4, delay: 0.4 }}
+          className="w-full"
+        >
+          <Panel className="p-4">
+            <h3 className="font-pixel text-[0.6rem] text-white/40 mb-3">WHAT HAPPENED</h3>
+            <div className="space-y-2">
+              {SOURCES.map(src => {
+                const ss = result.sourceStates[src.id]
+                const output = getEffectiveOutput(src.id, result.conditions)
+                const noFuel = src.fuelMax !== null && ss.fuel !== null && ss.fuel <= 0
+                const deadAtNight = ss.on && output === 0 && result.conditions.phase === 'night' && src.id === 'solar'
+                const deadByStorm = ss.on && output < src.baseOutput * 0.5 && result.conditions.storm
+
+                let statusText: string
+                let statusColor: string
+                if (noFuel) { statusText = '⚠ RAN OUT OF FUEL'; statusColor = '#ffcc33' }
+                else if (!ss.on) { statusText = '■ Was OFF'; statusColor = '#555' }
+                else if (deadAtNight) { statusText = '🌑 ON but NIGHT → 0 ⚡/s!'; statusColor = '#ff4d4d' }
+                else if (deadByStorm) { statusText = `🌪 Storm cut power to ${output.toFixed(1)} ⚡/s`; statusColor = '#ffcc33' }
+                else { statusText = `▶ +${output.toFixed(1)} ⚡/s`; statusColor = '#33ff88' }
+
+                return (
+                  <div key={src.id} className="flex items-center gap-2">
+                    <span className="text-xl" style={{ color: src.color }}>{src.icon}</span>
+                    <span className="font-pixel text-[0.55rem] w-20 shrink-0" style={{ color: src.color }}>{src.short}</span>
+                    <span className="font-vt text-base ml-auto text-right" style={{ color: statusColor }}>{statusText}</span>
+                  </div>
+                )
+              })}
             </div>
           </Panel>
         </motion.div>

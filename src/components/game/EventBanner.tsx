@@ -16,7 +16,7 @@ export function EventBanner({ label }: EventBannerProps) {
           transition={{ duration: 0.25 }}
           className="text-center py-1"
         >
-          <span className="font-pixel text-[0.45rem] text-cyan animate-blink-slow px-3 py-1 border border-cyan/40 bg-cyan/10">
+          <span className="font-pixel text-[0.6rem] text-cyan animate-blink-slow px-3 py-1 border border-cyan/40 bg-cyan/10">
             ⚡ {label}
           </span>
         </motion.div>

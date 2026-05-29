@@ -24,7 +24,7 @@ export function EnergyBar({ energy, netKwh }: EnergyBarProps) {
           <span
             className={`font-vt text-2xl font-bold ${netKwh >= 0 ? 'text-pixel-green' : 'text-pixel-red'}`}
           >
-            {netKwh >= 0 ? '+' : ''}{netKwh.toFixed(1)} kWh/s
+            {netKwh >= 0 ? '+' : ''}{netKwh.toFixed(1)} ⚡/s
           </span>
         </div>
       </div>

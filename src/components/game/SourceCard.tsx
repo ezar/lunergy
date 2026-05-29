@@ -75,7 +75,7 @@ export function SourceCard({ id, state, conditions, score, onToggle, onRefuel }:
         <span className="font-vt text-4xl leading-none" style={{ color: isOn ? src.color : '#555' }}>
           {isOn ? effectiveOutput.toFixed(1) : src.baseOutput.toFixed(1)}
         </span>
-        <span className="font-pixel text-xs text-white/40">kWh/s</span>
+        <span className="font-pixel text-xs text-white/40">⚡/s</span>
         {isOn && isModified && (
           <span
             className="font-pixel text-xs ml-1"

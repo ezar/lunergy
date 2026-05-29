@@ -7,6 +7,8 @@ import { EnergyBar } from '../game/EnergyBar'
 import { MoonBase } from '../game/MoonBase'
 import { SourceCard } from '../game/SourceCard'
 import { EventBanner } from '../game/EventBanner'
+import { ConditionHintBanner } from '../game/ConditionHintBanner'
+import { HintBanner } from '../game/HintBanner'
 import { EventLog } from '../game/EventLog'
 import { FactToast } from '../game/FactToast'
 import type { SourceId } from '../../types'
@@ -27,6 +29,7 @@ export function GameScreen() {
   const phaseIndex = useGameStore(s => s.phaseIndex)
   const factSource = useGameStore(s => s.factSource)
   const factText = useGameStore(s => s.factText)
+  const conditionHint = useGameStore(s => s.conditionHint)
   const toggleSource = useGameStore(s => s.toggleSource)
   const refuel = useGameStore(s => s.refuel)
 
@@ -65,10 +68,16 @@ export function GameScreen() {
         {/* Event banner */}
         <EventBanner label={activeEventLabel} />
 
+        {/* Condition hint — explains what the condition means */}
+        <ConditionHintBanner hint={conditionHint} />
+
         {/* Main content area */}
         <div className="flex flex-1 overflow-hidden">
           {/* Left: moon base + sources */}
           <div className="flex flex-col flex-1 overflow-y-auto px-4 py-3 gap-4">
+            {/* Contextual gameplay hints */}
+            <HintBanner energy={energy} conditions={conditions} sourceStates={sourceStates} />
+
             {/* Moon base */}
             <MoonBase energy={energy} />
 

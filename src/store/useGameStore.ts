@@ -50,6 +50,8 @@ export interface GameState {
   factSource: SourceId | null
   factText: string | null
   factTimer: number
+  conditionHint: string | null
+  conditionHintTimer: number
 
   // actions
   goTo: (screen: Screen) => void
@@ -79,6 +81,8 @@ export const useGameStore = create<GameState>()(
       factSource: null,
       factText: null,
       factTimer: 0,
+      conditionHint: null,
+      conditionHintTimer: 0,
 
       goTo: (screen) => set({ screen }),
 
@@ -100,13 +104,15 @@ export const useGameStore = create<GameState>()(
           factSource: null,
           factText: null,
           factTimer: 0,
+          conditionHint: getConditionHint(conditions),
+          conditionHintTimer: 7,
         })
       },
 
       endGame: () => {
-        const { time, score, highScore } = get()
+        const { time, score, highScore, sourceStates, conditions } = get()
         const newHigh = Math.max(score, highScore)
-        const result: GameResult = { time, score }
+        const result: GameResult = { time, score, sourceStates, conditions }
         set({
           screen: 'gameover',
           result,
@@ -133,6 +139,10 @@ export const useGameStore = create<GameState>()(
           factTimer,
         } = state
 
+        let conditionHint = state.conditionHint
+        let conditionHintTimer = Math.max(0, state.conditionHintTimer - dt)
+        if (conditionHintTimer <= 0) conditionHint = null
+
         // ── Time ──────────────────────────────────────────────────────────
         time += dt
 
@@ -153,6 +163,8 @@ export const useGameStore = create<GameState>()(
           newConditions = rollConditions(conditions)
           const label = describeConditions(newConditions)
           newActiveEvent = label
+          conditionHint = getConditionHint(newConditions)
+          conditionHintTimer = 7
           newEvents = addLog(newEvents, `☽ CONDITIONS: ${label}`, '#66e0ff', time)
         }
         nextShiftIn = CONDITION_INTERVAL - conditionTimer
@@ -213,6 +225,8 @@ export const useGameStore = create<GameState>()(
             factSource,
             factText,
             factTimer: newFactTimer,
+            conditionHint,
+            conditionHintTimer,
           })
           get().endGame()
           return
@@ -232,6 +246,8 @@ export const useGameStore = create<GameState>()(
           factSource,
           factText,
           factTimer: newFactTimer,
+          conditionHint,
+          conditionHintTimer,
         })
       },
 
@@ -259,7 +275,7 @@ export const useGameStore = create<GameState>()(
           const output = getEffectiveOutput(id, conditions)
           newEvents = addLog(
             newEvents,
-            `▶ ${src.name} ACTIVATED (+${output.toFixed(1)} kWh/s)`,
+            `▶ ${src.name} ACTIVATED (+${output.toFixed(1)} ⚡/s)`,
             src.color,
             time,
           )
@@ -312,6 +328,25 @@ export const useGameStore = create<GameState>()(
 
 function addLog(events: LogEvent[], text: string, color: string, t: number): LogEvent[] {
   return [{ t, text, color }, ...events].slice(0, 20)
+}
+
+function getConditionHint(c: Conditions): string {
+  const effects: string[] = []
+  if (c.phase === 'night') {
+    effects.push('🌑 Night — Solar is OFFLINE!')
+    if (c.temp === 'cold') effects.push(' ❄ Extreme cold weakens Helium-3 & Methane.')
+    effects.push(' → Activate Fusion or Helium-3.')
+  } else {
+    if (c.storm) {
+      effects.push('🌪 Dust storm — Solar cut to 20%!')
+      effects.push(' → Switch on Fusion or Helium-3.')
+    } else {
+      effects.push('☀ Daytime — Solar at full power!')
+      if (c.temp === 'hot') effects.push(' Heat slightly reduces Fusion.')
+    }
+    if (c.temp === 'cold') effects.push(' ❄ Extreme cold weakens Helium-3 & Methane.')
+  }
+  return effects.join('')
 }
 
 function describeConditions(c: Conditions): string {

@@ -58,4 +58,6 @@ export interface PhaseConfig {
 export interface GameResult {
   time: number
   score: number
+  sourceStates: Record<SourceId, SourceState>
+  conditions: Conditions
 }
