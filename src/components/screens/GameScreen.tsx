@@ -68,12 +68,12 @@ export function GameScreen() {
         {/* Main content area */}
         <div className="flex flex-1 overflow-hidden">
           {/* Left: moon base + sources */}
-          <div className="flex flex-col flex-1 overflow-y-auto px-3 py-2 gap-3">
+          <div className="flex flex-col flex-1 overflow-y-auto px-4 py-3 gap-4">
             {/* Moon base */}
             <MoonBase energy={energy} />
 
             {/* Source grid */}
-            <div className="grid grid-cols-2 gap-2 pb-4">
+            <div className="grid grid-cols-2 gap-3 pb-4">
               {SOURCES.map(src => (
                 <SourceCard
                   key={src.id}

@@ -13,29 +13,29 @@ interface TopHUDProps {
 
 export function TopHUD({ score, time, conditions, nextShiftIn, phaseIndex }: TopHUDProps) {
   return (
-    <div className="flex items-center justify-between px-4 py-2 border-b border-white/10 bg-space-950/80 backdrop-blur">
+    <div className="flex items-center justify-between px-5 py-3 border-b border-white/10 bg-space-950/90 backdrop-blur gap-4">
       {/* Logo */}
-      <div className="font-pixel text-[0.65rem] text-gold animate-pulse-glow tracking-widest">
+      <div className="font-pixel text-lg text-gold animate-pulse-glow tracking-widest shrink-0">
         LUNERGY
       </div>
 
-      {/* Conditions */}
-      <div className="flex flex-col items-center gap-1">
+      {/* Conditions + shift */}
+      <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
         <ConditionPill conditions={conditions} />
-        <div className="flex gap-3 items-center">
-          <span className="font-pixel text-[0.38rem] text-white/30">
+        <div className="flex gap-4 items-center">
+          <span className="font-pixel text-xs text-white/40">
             SHIFT IN: <span className="text-cyan">{Math.ceil(nextShiftIn)}s</span>
           </span>
-          <span className="font-pixel text-[0.38rem] text-white/30">
+          <span className="font-pixel text-xs text-white/40 hidden sm:inline">
             {PHASES[phaseIndex].name}
           </span>
         </div>
       </div>
 
       {/* Score + time */}
-      <div className="text-right">
-        <div className="font-pixel text-[0.55rem] text-gold">{padScore(score)}</div>
-        <div className="font-pixel text-[0.42rem] text-white/50 mt-0.5">{formatTime(time)}</div>
+      <div className="text-right shrink-0">
+        <div className="font-pixel text-base text-gold">{padScore(score)}</div>
+        <div className="font-pixel text-xs text-white/50 mt-1">{formatTime(time)}</div>
       </div>
     </div>
   )

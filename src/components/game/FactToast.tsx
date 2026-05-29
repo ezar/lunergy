@@ -15,23 +15,23 @@ export function FactToast({ factSource, factText }: FactToastProps) {
       {factText && src && (
         <motion.div
           key={factText}
-          initial={{ y: 80, opacity: 0 }}
+          initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 80, opacity: 0 }}
+          exit={{ y: 100, opacity: 0 }}
           transition={{ duration: 0.35, ease: 'easeOut' }}
-          className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-xl px-4"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-2xl px-4"
         >
           <div
-            className="border bg-space-950/95 px-4 py-3 backdrop-blur"
-            style={{ borderColor: src.color + '88' }}
+            className="border-2 bg-space-950/97 px-6 py-4 backdrop-blur"
+            style={{ borderColor: src.color + 'cc' }}
           >
             <p
-              className="font-pixel text-[0.42rem] mb-1.5"
+              className="font-pixel text-sm mb-3"
               style={{ color: src.color }}
             >
               {src.icon} {src.name} — DID YOU KNOW?
             </p>
-            <p className="font-vt text-sm text-white/80 leading-snug">{factText}</p>
+            <p className="font-vt text-xl text-white/90 leading-snug">{factText}</p>
           </div>
         </motion.div>
       )}

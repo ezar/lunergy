@@ -45,8 +45,8 @@ export function GameOverScreen() {
           transition={{ duration: 0.5 }}
           className="text-center"
         >
-          <h2 className="font-pixel text-lg text-pixel-red mb-1">BASE OFFLINE</h2>
-          <p className="font-vt text-base text-white/50">Power failure — mission ended</p>
+          <h2 className="font-pixel text-2xl text-pixel-red mb-2">BASE OFFLINE</h2>
+          <p className="font-vt text-xl text-white/50">Power failure — mission ended</p>
         </motion.div>
 
         {/* Stats panel */}
@@ -70,7 +70,7 @@ export function GameOverScreen() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.5 }}
-                  className="font-pixel text-[0.45rem] text-pixel-green text-center animate-blink"
+                  className="font-pixel text-xs text-pixel-green text-center animate-blink"
                 >
                   ★ NEW HIGH SCORE! ★
                 </motion.p>
@@ -84,7 +84,7 @@ export function GameOverScreen() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
-          className="font-vt text-base text-white/60 text-center leading-snug"
+          className="font-vt text-xl text-white/60 text-center leading-snug"
         >
           {message}
         </motion.p>
@@ -116,9 +116,9 @@ function Stat({ label, value, color, big = false }: {
 }) {
   return (
     <div className="flex justify-between items-baseline">
-      <span className="font-pixel text-[0.42rem] text-white/40">{label}</span>
+      <span className="font-pixel text-xs text-white/40">{label}</span>
       <span
-        className={big ? 'font-pixel text-base' : 'font-vt text-xl'}
+        className={big ? 'font-pixel text-lg' : 'font-vt text-2xl'}
         style={{ color }}
       >
         {value}

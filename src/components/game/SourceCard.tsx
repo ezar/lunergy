@@ -23,44 +23,42 @@ export function SourceCard({ id, state, conditions, score, onToggle, onRefuel }:
   const effectiveOutput = isOn ? getEffectiveOutput(id, conditions) : 0
   const multiplier = getEffectiveMultiplier(id, conditions)
   const isModified = Math.abs(multiplier - 1) > 0.05
+  const isBoosted = multiplier > 1
+  const isReduced = multiplier < 1
 
   const fuelColor =
-    fuelPct === null
-      ? '#33ff88'
-      : fuelPct > 50
-      ? '#33ff88'
-      : fuelPct > 20
-      ? '#ffcc33'
-      : '#ff4d4d'
+    fuelPct === null ? '#33ff88'
+    : fuelPct > 50 ? '#33ff88'
+    : fuelPct > 20 ? '#ffcc33'
+    : '#ff4d4d'
 
   return (
     <motion.div
-      animate={isOn ? { boxShadow: [`0 0 8px ${src.color}55`, `0 0 20px ${src.color}88`, `0 0 8px ${src.color}55`] } : { boxShadow: '0 0 0px transparent' }}
+      animate={isOn
+        ? { boxShadow: [`0 0 10px ${src.color}55`, `0 0 24px ${src.color}99`, `0 0 10px ${src.color}55`] }
+        : { boxShadow: '0 0 0px transparent' }
+      }
       transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
       className={[
-        'border p-3 flex flex-col gap-2 cursor-pointer select-none transition-colors duration-200',
-        isOn
-          ? 'bg-space-800/80 border-opacity-70'
-          : 'bg-space-950/60 border-white/10',
+        'border-2 p-4 flex flex-col gap-3 cursor-pointer select-none transition-colors duration-200',
+        isOn ? 'bg-space-800/80' : 'bg-space-950/60 border-white/10',
         noFuel ? 'opacity-60' : '',
       ].join(' ')}
-      style={{
-        borderColor: isOn ? src.color + 'aa' : undefined,
-      }}
+      style={{ borderColor: isOn ? src.color + 'cc' : undefined }}
       onClick={() => { if (!noFuel || isOn) onToggle(id) }}
     >
-      {/* Header */}
+      {/* Header: icon + name + ON/OFF badge */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-lg" style={{ color: src.color }}>{src.icon}</span>
-          <span className="font-pixel text-[0.45rem]" style={{ color: src.color }}>
+        <div className="flex items-center gap-3">
+          <span className="text-3xl" style={{ color: src.color }}>{src.icon}</span>
+          <span className="font-pixel text-sm leading-tight" style={{ color: src.color }}>
             {src.short}
           </span>
         </div>
         <div
           className={[
-            'font-pixel text-[0.42rem] px-2 py-0.5 border',
-            isOn ? 'animate-pulse-glow' : '',
+            'font-pixel text-xs px-3 py-1 border',
+            isOn ? 'animate-blink-slow' : '',
           ].join(' ')}
           style={{
             color: isOn ? '#33ff88' : '#ff4d4d',
@@ -68,36 +66,48 @@ export function SourceCard({ id, state, conditions, score, onToggle, onRefuel }:
             backgroundColor: isOn ? '#33ff8811' : '#ff4d4d11',
           }}
         >
-          {noFuel ? 'NO FUEL' : isOn ? 'ON' : 'OFF'}
+          {noFuel ? '⚠ NO FUEL' : isOn ? '▶ ON' : '■ OFF'}
         </div>
       </div>
 
-      {/* Output */}
-      <div className="flex items-baseline gap-1">
-        <span className="font-vt text-xl" style={{ color: isOn ? src.color : '#444' }}>
+      {/* Output display */}
+      <div className="flex items-baseline gap-2">
+        <span className="font-vt text-4xl leading-none" style={{ color: isOn ? src.color : '#555' }}>
           {isOn ? effectiveOutput.toFixed(1) : src.baseOutput.toFixed(1)}
         </span>
-        <span className="font-pixel text-[0.38rem] text-white/40">kWh/s</span>
+        <span className="font-pixel text-xs text-white/40">kWh/s</span>
         {isOn && isModified && (
           <span
-            className="font-pixel text-[0.38rem] ml-1"
-            style={{ color: multiplier >= 1 ? '#33ff88' : '#ff4d4d' }}
+            className="font-pixel text-xs ml-1"
+            style={{ color: isBoosted ? '#33ff88' : '#ff4d4d' }}
           >
-            ×{multiplier.toFixed(2)}
+            {isBoosted ? '▲' : '▼'} ×{multiplier.toFixed(2)}
           </span>
         )}
       </div>
 
+      {/* Condition hint */}
+      {isOn && isReduced && (
+        <p className="font-vt text-base text-pixel-red/80">
+          ⚠ Penalised by current conditions
+        </p>
+      )}
+      {isOn && isBoosted && (
+        <p className="font-vt text-base text-pixel-green/80">
+          ✓ Boosted by current conditions!
+        </p>
+      )}
+
       {/* Fuel bar */}
       {fuelPct !== null && (
         <div>
-          <div className="flex justify-between mb-0.5">
-            <span className="font-pixel text-[0.38rem] text-white/40">FUEL</span>
-            <span className="font-pixel text-[0.38rem]" style={{ color: fuelColor }}>
+          <div className="flex justify-between mb-1">
+            <span className="font-pixel text-xs text-white/40">FUEL</span>
+            <span className="font-pixel text-xs" style={{ color: fuelColor }}>
               {fuelPct.toFixed(0)}%
             </span>
           </div>
-          <div className="h-1.5 bg-space-800 border border-white/10">
+          <div className="h-3 bg-space-800 border border-white/10">
             <div
               className="h-full transition-all duration-300"
               style={{ width: `${fuelPct}%`, backgroundColor: fuelColor }}
@@ -115,7 +125,7 @@ export function SourceCard({ id, state, conditions, score, onToggle, onRefuel }:
           disabled={score < 100}
           className="w-full text-center"
         >
-          REFUEL (-100 PTS)
+          {score < 100 ? 'NEED 100 PTS TO REFUEL' : '⛽ REFUEL (−100 PTS)'}
         </PixelButton>
       )}
     </motion.div>

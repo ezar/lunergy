@@ -31,10 +31,10 @@ export function TitleScreen() {
           transition={{ duration: 0.8, ease: 'easeOut' }}
           className="text-center"
         >
-          <h1 className="font-pixel text-4xl text-gold animate-pulse-glow tracking-widest mb-2">
+          <h1 className="font-pixel text-5xl text-gold animate-pulse-glow tracking-widest mb-3">
             LUNERGY
           </h1>
-          <p className="font-vt text-xl text-white/60 tracking-widest">
+          <p className="font-vt text-2xl text-white/60 tracking-widest">
             MOON BASE ENERGY SURVIVAL
           </p>
         </motion.div>
@@ -47,7 +47,7 @@ export function TitleScreen() {
           className="relative"
         >
           <div
-            className="w-24 h-24 rounded-full bg-gradient-to-br from-white/80 to-white/20"
+            className="w-36 h-36 rounded-full bg-gradient-to-br from-white/80 to-white/20"
             style={{
               boxShadow: '0 0 40px rgba(255,255,255,0.2), 0 0 80px rgba(200,220,255,0.1)',
             }}
@@ -80,7 +80,7 @@ export function TitleScreen() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.9 }}
-            className="font-pixel text-[0.45rem] text-gold/70"
+            className="font-pixel text-xs text-gold/70"
           >
             BEST: {String(Math.floor(highScore)).padStart(6, '0')}
           </motion.div>
@@ -91,7 +91,7 @@ export function TitleScreen() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.1 }}
-          className="font-vt text-sm text-white/30 max-w-xs text-center"
+          className="font-vt text-lg text-white/40 max-w-xs text-center"
         >
           Manage solar, fusion, helium-3, and methane power to keep your lunar base alive.
         </motion.p>
