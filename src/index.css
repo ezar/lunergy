@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body, #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #05030f;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #05030f;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #2a1a5e;
+    border-radius: 0;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #6a4cff;
+  }
+}
+
+@layer utilities {
+  .image-rendering-pixelated {
+    image-rendering: pixelated;
+  }
+}
