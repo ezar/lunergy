@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useGameStore, getNetKwh } from '../../store/useGameStore'
 import { useGameLoop } from '../../hooks/useGameLoop'
 import { useAudio } from '../../hooks/useAudio'
@@ -9,6 +10,7 @@ import { SourceCard } from '../game/SourceCard'
 import { EventBanner } from '../game/EventBanner'
 import { ConditionHintBanner } from '../game/ConditionHintBanner'
 import { HintBanner } from '../game/HintBanner'
+import { TutorialOverlay } from '../game/TutorialOverlay'
 import { EventLog } from '../game/EventLog'
 import { FactToast } from '../game/FactToast'
 import type { SourceId } from '../../types'
@@ -17,6 +19,7 @@ import { SOURCES } from '../../lib/constants'
 export function GameScreen() {
   useGameLoop()
   const { playSound } = useAudio()
+  const [tutorialActive, setTutorialActive] = useState(true)
 
   const energy = useGameStore(s => s.energy)
   const score = useGameStore(s => s.score)
@@ -36,6 +39,7 @@ export function GameScreen() {
   const netKwh = getNetKwh(sourceStates, conditions, phaseIndex)
 
   const handleToggle = (id: SourceId) => {
+    setTutorialActive(false)
     const wasOn = sourceStates[id].on
     toggleSource(id)
     playSound(wasOn ? 'powerOff' : 'powerOn')
@@ -103,6 +107,9 @@ export function GameScreen() {
           </div>
         </div>
       </div>
+
+      {/* First-play tutorial overlay — pointer-events:none so cards still work */}
+      <TutorialOverlay visible={tutorialActive} />
 
       {/* Fact toast overlay */}
       <FactToast factSource={factSource} factText={factText} />

@@ -25,10 +25,7 @@ const FUEL_REFILL_AMOUNT = 100
 function initialSourceStates(): Record<SourceId, SourceState> {
   const result = {} as Record<SourceId, SourceState>
   for (const src of SOURCES) {
-    result[src.id] = {
-      on: src.id === 'solar',
-      fuel: src.fuelMax,
-    }
+    result[src.id] = { on: false, fuel: src.fuelMax }
   }
   return result
 }
@@ -87,7 +84,7 @@ export const useGameStore = create<GameState>()(
       goTo: (screen) => set({ screen }),
 
       startGame: () => {
-        const conditions = rollConditions()
+        const conditions: Conditions = { phase: 'day', storm: false, temp: 'normal' }
         set({
           screen: 'game',
           energy: INITIAL_ENERGY,

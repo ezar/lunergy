@@ -41,10 +41,10 @@ export function SourceCard({ id, state, conditions, score, onToggle, onRefuel }:
       transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
       className={[
         'border-2 p-4 flex flex-col gap-3 cursor-pointer select-none transition-colors duration-200',
-        isOn ? 'bg-space-800/80' : 'bg-space-950/60 border-white/10',
+        isOn ? 'bg-space-800/80' : 'bg-space-950/60',
         noFuel ? 'opacity-60' : '',
       ].join(' ')}
-      style={{ borderColor: isOn ? src.color + 'cc' : undefined }}
+      style={{ borderColor: isOn ? src.color + 'cc' : noFuel ? '#ff4d4d44' : src.color + '55' }}
       onClick={() => { if (!noFuel || isOn) onToggle(id) }}
     >
       {/* Header: icon + name + ON/OFF badge */}
@@ -66,7 +66,7 @@ export function SourceCard({ id, state, conditions, score, onToggle, onRefuel }:
             backgroundColor: isOn ? '#33ff8811' : '#ff4d4d11',
           }}
         >
-          {noFuel ? '⚠ NO FUEL' : isOn ? '▶ ON' : '■ OFF'}
+          {noFuel ? '⚠ NO FUEL' : isOn ? '▶ ON' : '👆 TAP'}
         </div>
       </div>
 
